@@ -1,0 +1,11 @@
+<div class="bento-card span-1 gsap-reveal hover-3d hover-target">
+  <div class="inline-img-box" style="height: 120px; margin-bottom: 16px;">
+    <img src="NAMA_FILE_FOTO.jpg" alt="Nama Proyek Baru">
+  </div>
+  
+  <div class="card-title" style="font-size: 18px;">Judul Proyek Barumu</div>
+  
+  <p class="card-text" style="font-size: 13px;">
+    Tuliskan deskripsi singkat tentang proyek baru ini di sini. Misalnya: "Perancangan transmisi mekanikal menggunakan SolidWorks."
+  </p>
+</div>
