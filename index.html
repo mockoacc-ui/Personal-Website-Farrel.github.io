@@ -104,14 +104,6 @@ nav {
 .span-4 { grid-column: span 4; }
 .row-2 { grid-row: span 2; }
 
-@media (max-width: 900px) {
-  .bento-grid { grid-template-columns: 1fr; }
-  .span-1, .span-2, .span-3, .span-4 { grid-column: span 1; }
-  .row-2 { grid-row: span 1; min-height: auto; }
-  body { cursor: auto; }
-  .cursor-dot, .cursor-ring { display: none; }
-}
-
 /* ── FOTO INLINE & ABSOLUTE ── */
 .inline-img-box {
   width: 100%; border-radius: 16px; overflow: hidden; flex-shrink: 0;
@@ -177,6 +169,14 @@ nav {
 .cs-result .cs-label { color: #00ff66; background: transparent; border: none; padding: 0; padding-top: 2px; }
 .cs-result .cs-value { color: #e0ffe8; }
 
+/* ── CUSTOM FOOTER ── */
+.custom-footer {
+  text-align: center; margin-top: 80px; padding: 40px 20px;
+  border-top: 1px solid var(--card-border);
+  font-size: 13px; color: var(--text-muted);
+}
+.custom-footer span { color: #00ff66; font-weight: 600; }
+
 /* ── CHAT WIDGET ── */
 #chat-widget {
   position: fixed; bottom: 32px; right: 32px; z-index: 200; width: 380px;
@@ -205,7 +205,7 @@ nav {
 
 /* ── MUSIC PLAYER WIDGET ── */
 #music-player {
-  position: fixed; bottom: 32px; left: 32px; z-index: 200;
+  position: fixed; bottom: 32px; left: 32px; z-index: 199;
   display: flex; align-items: center; gap: 12px;
   background: rgba(5, 5, 5, 0.6); backdrop-filter: blur(20px);
   border: 1px solid var(--card-border); border-radius: 99px;
@@ -221,15 +221,51 @@ nav {
 .track-name { font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
 .track-status { font-size: 10px; color: #00ff66; font-family: monospace; text-transform: uppercase; letter-spacing: 0.05em; }
 .track-status.paused { color: var(--text-muted); }
+
+/* ── MOBILE RESPONSIVENESS (PERBAIKAN TOTAL) ── */
+@media (max-width: 900px) {
+  /* Paksa Grid jadi 1 Kolom */
+  .bento-grid { grid-template-columns: 1fr !important; gap: 16px; }
+  .span-1, .span-2, .span-3, .span-4 { grid-column: span 1 !important; }
+  .row-2 { grid-row: span 1 !important; min-height: auto; }
+  
+  body { padding: 100px 16px 120px; cursor: auto; }
+  .cursor-dot, .cursor-ring { display: none; }
+  
+  nav { width: 90%; max-width: 400px; overflow-x: auto; border-radius: 16px; justify-content: flex-start; }
+  nav::-webkit-scrollbar { display: none; }
+  .nav-links { flex-shrink: 0; }
+  
+  /* Perbaikan Teks Skripsi Biar Gak Nabrak */
+  .cs-step { grid-template-columns: 1fr !important; gap: 8px; }
+  .cs-label { width: fit-content; }
+  
+  /* Tata Letak AI Chat biar gak nimpa musik */
+  #chat-widget { 
+    bottom: 85px; right: 16px; left: 16px; 
+    width: calc(100% - 32px) !important; 
+    border-radius: 20px; z-index: 200; 
+  }
+  #chat-widget.collapsed { 
+    width: 170px !important; bottom: 20px; right: 16px; left: auto; 
+  }
+  
+  /* Tata Letak Music Player di HP */
+  #music-player { 
+    bottom: 20px; left: 16px; 
+    padding: 8px 14px; max-width: 160px; z-index: 199; 
+  }
+  .track-info { max-width: 90px; }
+  .track-name { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .hero-title { font-size: 32px; }
+  .contact-heading { font-size: 40px; }
+}
 </style>
 </head>
 <body>
-<!-- Pemutar Lagu Tersembunyi -->
-  <audio id="bg-music" loop>
-    <source src="Blurry.mp3" type="audio/mpeg">
-  </audio>
-<body>
-  <!-- Pemutar Lagu Tersembunyi -->
+
+  <!-- Pemutar Lagu Puddle of Mudd -->
   <audio id="bg-music" loop>
     <source src="Blurry.mp3" type="audio/mpeg">
   </audio>
@@ -237,7 +273,6 @@ nav {
   <!-- Widget Piringan Hitam -->
   <div id="music-player" class="hover-target" onclick="toggleMusic()">
     <div class="vinyl-icon" id="vinyl">
-      <!-- SVG Piringan Hitam -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10" fill="#111"></circle>
         <circle cx="12" cy="12" r="3" stroke="#555"></circle>
@@ -249,7 +284,7 @@ nav {
       <span class="track-status paused" id="track-status">Click to Play</span>
     </div>
   </div>
-  <div class="cursor-dot"></div>
+
 <div class="cursor-dot"></div>
 <div class="cursor-ring"></div>
 <div class="ambient-glow"></div>
@@ -633,7 +668,7 @@ nav {
   </div>
 </div>
 
-<div class="sec-wrapper" id="contact" style="text-align: center; margin-top: 150px; margin-bottom: 80px;">
+<div class="sec-wrapper" id="contact" style="text-align: center; margin-top: 150px; margin-bottom: 40px;">
   <h2 class="contact-heading gsap-reveal">LET'S WORK<br><span>TOGETHER.</span></h2>
   <div class="contact-flex gsap-reveal">
     <a href="CV-Farrel-Pratama.pdf" target="_blank" download class="contact-btn hover-target" style="background: var(--text-main); color: var(--bg); border-color: var(--text-main);">
@@ -647,6 +682,10 @@ nav {
     <a href="https://wa.me/6281316572888" target="_blank" class="contact-btn hover-target">WhatsApp: +62 813-1657-2888</a>
     <a href="https://www.linkedin.com/in/farrel-pratama-wicaksono/" target="_blank" class="contact-btn hover-target">LinkedIn Profile</a>
   </div>
+</div>
+
+<div class="custom-footer gsap-reveal">
+  Website ini dibuat secara mandiri (Handcoded) 👨‍💻.<br>Bukan pakai <span>template instan</span> atau jasa Hostinger wkwkwk.
 </div>
 
 <div id="chat-widget" class="collapsed hover-target">
@@ -739,25 +778,27 @@ function toggleChat() {
   document.getElementById('chat-widget').classList.toggle('collapsed', !open);
 }
 
-// --- FITUR BACKGROUND MUSIC ---
-// Kode ini HARUS di luar fungsi toggleChat agar langsung aktif
-document.body.addEventListener('click', function playAudio() {
-  const music = document.getElementById('bg-music');
-  
-  // Set volume (0.0 sampai 1.0). 0.2 artinya volume 20% biar gak kebesaran
-  music.volume = 0.2; 
-  
-  // Putar lagunya
-  music.play().then(() => {
-    console.log("BGM menyala!");
-  }).catch((e) => {
-    console.log("BGM diblokir browser");
-  });
+// --- FITUR BACKGROUND MUSIC TAMPAN ---
+const music = document.getElementById('bg-music');
+music.volume = 0.2; // Volume 20% biar elegan
 
-  // Hapus event listener agar tidak terus-terusan di-trigger setiap kali klik
-  document.body.removeEventListener('click', playAudio);
-}, { once: true });
-
+function toggleMusic() {
+  const vinyl = document.getElementById('vinyl');
+  const status = document.getElementById('track-status');
+  
+  if (music.paused) {
+    music.play().then(() => {
+      vinyl.classList.add('spin-anim'); // Putar piringan
+      status.innerText = "Now Playing";
+      status.classList.remove('paused');
+    }).catch(e => console.log("Autoplay diblokir, butuh interaksi user."));
+  } else {
+    music.pause();
+    vinyl.classList.remove('spin-anim'); // Hentikan piringan
+    status.innerText = "Paused";
+    status.classList.add('paused');
+  }
+}
 </script>
 </body>
 </html>
