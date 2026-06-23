@@ -716,7 +716,7 @@ async function sendMsg() {
   const prompt = `Kamu adalah AI digital twin Farrel. Jawablah pertanyaan pengunjung dengan taktis dan profesional. DATA:\n${KNOWLEDGE_BASE}\n\nPERTANYAAN PENGUNJUNG:\n${txt}`;
 
   try {
-    const res = await fetch('http://127.0.0.1:1234/v1/chat/completions', {
+    const res = await fetch('https://yodel-roman-deviate.ngrok-free.dev/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], temperature: 0.5, stream: false })
@@ -726,7 +726,7 @@ async function sendMsg() {
     box.innerHTML += `<div class="m-ai">${data.choices[0].message.content}</div>`;
   } catch(e) {
     document.getElementById(loadingId).remove();
-    box.innerHTML += `<div class="m-ai" style="color:#ff4444">Error: Koneksi localhost:1234 terputus. Pastikan LM Studio aktif.</div>`;
+    box.innerHTML += `<div class="m-ai" style="color:#ff4444">Error: Koneksi server AI terputus. Pastikan LM Studio dan Ngrok aktif.</div>`;
   }
   box.scrollTop = box.scrollHeight;
 }
