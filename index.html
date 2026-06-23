@@ -713,7 +713,7 @@ async function sendMsg() {
   box.innerHTML += `<div id="${loadingId}" class="m-ai">Mengakses memori neural...</div>`;
   box.scrollTop = box.scrollHeight;
 
-  const prompt = `Kamu adalah AI digital twin Farrel. Jawablah pertanyaan pengunjung dengan taktis dan profesional. DATA:\n${KNOWLEDGE_BASE}\n\nPERTANYAAN PENGUNJUNG:\n${txt}`;
+  const prompt = `Kamu adalah Clone Farrel. Jawablah pertanyaan pengunjung dengan taktis dan profesional. DATA:\n${KNOWLEDGE_BASE}\n\nPERTANYAAN PENGUNJUNG:\n${txt}`;
 
   try {
     const res = await fetch('https://yodel-roman-deviate.ngrok-free.dev/v1/chat/completions', {
