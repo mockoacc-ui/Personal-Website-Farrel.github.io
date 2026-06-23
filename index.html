@@ -205,7 +205,12 @@ nav {
 </style>
 </head>
 <body>
+<!-- Pemutar Lagu Tersembunyi -->
+  <audio id="bg-music" loop>
+    <source src="Blurry.mp3" type="audio/mpeg">
+  </audio>
 
+  <div class="cursor-dot"></div>
 <div class="cursor-dot"></div>
 <div class="cursor-ring"></div>
 <div class="ambient-glow"></div>
@@ -694,6 +699,26 @@ function toggleChat() {
   open = !open;
   document.getElementById('chat-widget').classList.toggle('collapsed', !open);
 }
+
+// --- FITUR BACKGROUND MUSIC ---
+// Kode ini HARUS di luar fungsi toggleChat agar langsung aktif
+document.body.addEventListener('click', function playAudio() {
+  const music = document.getElementById('bg-music');
+  
+  // Set volume (0.0 sampai 1.0). 0.2 artinya volume 20% biar gak kebesaran
+  music.volume = 0.2; 
+  
+  // Putar lagunya
+  music.play().then(() => {
+    console.log("BGM menyala!");
+  }).catch((e) => {
+    console.log("BGM diblokir browser");
+  });
+
+  // Hapus event listener agar tidak terus-terusan di-trigger setiap kali klik
+  document.body.removeEventListener('click', playAudio);
+}, { once: true });
+
 </script>
 </body>
 </html>
