@@ -23,8 +23,8 @@ PENGALAMAN KERJA & MAGANG (PROFESIONAL):
 5. Studio Fotografi Makanan: Mengelola operasional studio, penawaran paket, dan mencari leads via Google Maps.
 
 PENGALAMAN ORGANISASI & KEPEMIMPINAN:
-1. President of Mechanical Engineering Class 2022 (Aug 2022 - Sekarang): Memimpin, mengawasi, dan mengoordinasikan 176 mahasiswa Teknik Mesin angkatan 2022 dalam berbagai kegiatan akademik maupun non-akademik.
-2. Himpunan Mahasiswa Mesin (HMM) UNDIP: Menjabat sebagai Head Human Resources Department (Nov 2024 - Nov 2025). Baru-baru ini menjadi pembicara dalam Leadership Training dengan membawakan materi "Thinking and Decision Making" (membahas korelasi Design Thinking dengan pengambilan keputusan).
+1. Komting Angkatan 2022 (Aug 2022 - Sekarang): Memimpin, mengawasi, dan mengoordinasikan 176 mahasiswa Teknik Mesin angkatan 2022 dalam berbagai kegiatan akademik maupun non-akademik.
+2. Himpunan Mahasiswa Mesin (HMM) UNDIP: Pernah Menjabat sebagai Dewan Litbang HMM (Nov 2024 - Nov 2025). Baru-baru ini menjadi pembicara dalam Leadership Training dengan membawakan materi "Thinking and Decision Making" (membahas korelasi Design Thinking dengan pengambilan keputusan).
 3. Public Relations Intern di Keluarga Studi Islam Mesin UNDIP (Feb 2023).
 4. Relawan & Kepanitiaan: Terlibat aktif di Musyawarah Tahunan 2022 (mengurus suksesi untuk 500+ peserta) dan menjadi Volunteer Registrasi di turnamen futsal Mechanical Project 6.0.
 

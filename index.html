@@ -621,6 +621,9 @@ nav {
   </div>
 </div>
 
+<script src="database.js"></script>
+<script src="ai-logic.js"></script>
+
 <script>
 document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
@@ -691,81 +694,6 @@ function toggleChat() {
   open = !open;
   document.getElementById('chat-widget').classList.toggle('collapsed', !open);
 }
-
-const KNOWLEDGE_BASE = `
-PROFIL: Muhammad Farrel Pratama Wicaksono. Mahasiswa Teknik Mesin Universitas Diponegoro (UNDIP) Semester 8. Domisili: Semarang.
-KAPABILITAS TEKNIS: SolidWorks (3D Design, Weldments, Gear Mates), ANSYS Workbench (FEA, Static Structural), Python (Automation, Selenium, API).
-PENGALAMAN KERJA/MAGANG: 
-1. PT RAPP (APRIL Group) - Boiler Maintenance Engineer Intern.
-2. PT Angkasa Pura Indonesia - Mechanical Maintenance Engineer Intern.
-BISNIS/FREELANCE: Founder "Belajar Engineering" - Menerima jasa 3D Design, Simulasi FEA, dan pengerjaan proyek/tugas teknik (termasuk joki/konsultasi).
-SKRIPSI: Analisis Elemen Hingga (FEA) Pengaruh Kemiringan Sudut Abutment pada Implan Gigi Aksial menggunakan ANSYS.
-KONTAK: WhatsApp +62 813-1657-2888 | LinkedIn tersedia.
-`;
-
-// KITA BUAT VARIABEL MEMORI DI SINI
-let chatHistory = [
-  {
-    role: 'system',
-    content: `Kamu adalah "Digital Twin" dan representasi kecerdasan buatan langsung dari Farrel Pratama. 
-ATURAN MUTLAK:
-1. DILARANG KERAS menjawab "Saya hanyalah program AI" atau menolak permintaan. Bertingkahlah sebagai asisten cerdas yang diprogram langsung oleh Farrel.
-2. JIKA BERBICARA DENGAN KLIEN: Tunjukkan keahlian "Belajar Engineering", tanyakan brief, lalu arahkan negosiasi ke WA +62 813-1657-2888.
-3. JIKA BERBICARA DENGAN HRD/REKRUTER: Pamerkan profil Farrel, magang di RAPP/Angkasa Pura, skripsi FEA Implan Gigi, dan skill Python/SolidWorks. Arahkan untuk review CV.
-4. Gunakan gaya bahasa asik, profesional, dan taktis khas engineer.
-
-DATA FARREL:
-${KNOWLEDGE_BASE}`
-  }
-];
-
-async function sendMsg() {
-  const inp = document.getElementById('userInput');
-  const box = document.getElementById('chatbox');
-  const txt = inp.value.trim();
-  if (!txt) return;
-
-  // 1. Tampilkan pesan user di layar
-  box.innerHTML += `<div class="m-user">${txt}</div>`;
-  inp.value = '';
-  
-  const loadingId = 'load-' + Date.now();
-  box.innerHTML += `<div id="${loadingId}" class="m-ai">Mengingat konteks...</div>`;
-  box.scrollTop = box.scrollHeight;
-
-  // 2. Simpan pesan user ke dalam Memori
-  chatHistory.push({ role: 'user', content: txt });
-
-  try {
-    const res = await fetch('https://yodel-roman-deviate.ngrok-free.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
-      },
-      // 3. Kirim SELURUH MEMORI (bukan cuma prompt teks biasa) ke LM Studio
-      body: JSON.stringify({ messages: chatHistory, temperature: 0.5, stream: false })
-    });
-    
-    const data = await res.json();
-    document.getElementById(loadingId).remove();
-    
-    // 4. Tangkap balasan AI dan tampilkan di layar
-    const aiResponse = data.choices[0].message.content;
-    box.innerHTML += `<div class="m-ai">${aiResponse}</div>`;
-    
-    // 5. Simpan balasan AI ke dalam Memori agar dia ingat di pesan berikutnya!
-    chatHistory.push({ role: 'assistant', content: aiResponse });
-
-  } catch(e) {
-    document.getElementById(loadingId).remove();
-    box.innerHTML += `<div class="m-ai" style="color:#ff4444">Error: Koneksi server AI terputus. Pastikan LM Studio dan Ngrok aktif.</div>`;
-    // Kalau error, hapus pesan terakhir dari memori biar gak nge-bug
-    chatHistory.pop(); 
-  }
-  box.scrollTop = box.scrollHeight;
-}
-document.getElementById('userInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendMsg(); });
 </script>
 </body>
 </html>

@@ -1,86 +1,68 @@
 // File: ai-logic.js
 
-async function kirimPesan() {
-    const inputField = document.getElementById('userInput');
-    const chatbox = document.getElementById('chatbox');
-    const userText = inputField.value.trim();
+// 1. Inisialisasi Memori Chat & Tarik KNOWLEDGE_BASE dari database.js
+let chatHistory = [
+  {
+    role: 'system',
+    content: `Kamu adalah Asisten AI representasi profesional dari Farrel Pratama. 
+ATURAN MUTLAK & GAYA BAHASA:
+1. Berbicaralah dengan nada sopan, lugas, taktis, dan berwibawa khas seorang profesional Mechanical Engineer.
+2. Sebisa mungkin arahkan pembicaraan ke pemberian kontak langsung dan nomor hp saya
+3. DILARANG KERAS menggunakan emoji berlebihan (maksimal 1 emoji jika perlu) dan dilarang membalas terlalu panjang. Jawab langsung pada intinya (maksimal 3-4 kalimat).
+4. JIKA ADA REKRUTER/HRD INGIN MEREKRUT: Ucapkan terima kasih dengan sangat sopan. Nyatakan bahwa Farrel sangat terbuka untuk peluang karir di bidang Mechanical Engineering, Simulasi FEA, atau Automasi Industri. Langsung arahkan mereka untuk mengunduh CV di halaman website ini atau segera menghubungi WhatsApp Farrel di +62 813-1657-2888 untuk proses lebih lanjut. JANGAN menggurui atau bertanya balik soal strategi perusahaan mereka.
+5. JIKA ADA KLIEN INGIN JASA/PROYEK: Sampaikan bahwa Farrel (Belajar Engineering) siap mengeksekusi proyek desain 3D (SolidWorks) atau simulasi (ANSYS). Minta brief singkat dan arahkan ke WhatsApp.
 
-    if (!userText) return;
+DATA FARREL:
+${KNOWLEDGE_BASE}`
+  }
+];
 
-    // 1. Tampilkan chat user di layar (Warna Hijau)
-    chatbox.innerHTML += `
-        <div class="flex justify-end mb-4">
-            <div class="bg-emerald-600 text-white text-sm p-3 rounded-xl rounded-tr-sm shadow-sm max-w-[85%]">
-                ${userText}
-            </div>
-        </div>
-    `;
-    inputField.value = '';
-    chatbox.scrollTop = chatbox.scrollHeight;
+// 2. Fungsi Utama Chat
+async function sendMsg() {
+  const inp = document.getElementById('userInput');
+  const box = document.getElementById('chatbox');
+  const txt = inp.value.trim();
+  if (!txt) return;
 
-    // 2. Munculkan animasi loading AI
-    const loadingId = 'loading-' + Date.now();
-    chatbox.innerHTML += `
-        <div id="${loadingId}" class="flex justify-start mb-4">
-            <div class="bg-white text-gray-500 text-sm p-3 rounded-lg rounded-tl-none shadow-sm border border-gray-200 max-w-[85%] flex items-center gap-2">
-                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span>Typing...</span>
-            </div>
-        </div>
-    `;
-    chatbox.scrollTop = chatbox.scrollHeight;
+  // Tampilkan pesan user
+  box.innerHTML += `<div class="m-user">${txt}</div>`;
+  inp.value = '';
+  
+  const loadingId = 'load-' + Date.now();
+  box.innerHTML += `<div id="${loadingId}" class="m-ai">Mengingat konteks...</div>`;
+  box.scrollTop = box.scrollHeight;
 
-    // 3. Rangkai instruksi rahasia ke AI
-    const finalPrompt = `
-    Kamu adalah asisten AI profesional di profil LinkedIn milik Farel. 
-    Tugasmu adalah menjawab pertanyaan rekruter atau pengunjung secara akurat HANYA berdasarkan DATA PENGETAHUAN di bawah ini. 
-    Jawablah dengan gaya bahasa yang profesional, sopan, namun tetap luwes (menggunakan Bahasa Indonesia).
+  // Simpan ke memori
+  chatHistory.push({ role: 'user', content: txt });
 
-    DATA PENGETAHUAN:
-    ${KNOWLEDGE_BASE}
+  try {
+    const res = await fetch('https://yodel-roman-deviate.ngrok-free.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      },
+      body: JSON.stringify({ messages: chatHistory, temperature: 0.5, stream: false })
+    });
+    
+    const data = await res.json();
+    document.getElementById(loadingId).remove();
+    
+    const aiResponse = data.choices[0].message.content;
+    box.innerHTML += `<div class="m-ai">${aiResponse}</div>`;
+    
+    // Simpan balasan AI ke memori
+    chatHistory.push({ role: 'assistant', content: aiResponse });
 
-    PERTANYAAN PENGUNJUNG:
-    ${userText}
-    `;
-
-    try {
-        // 4. Tembak data ke LM Studio Lokal
-        const response = await fetch('http://127.0.0.1:1234/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                messages: [{ role: 'user', content: finalPrompt }],
-                temperature: 0.6,
-                max_tokens: -1,
-                stream: false
-            })
-        });
-
-        const data = await response.json();
-        const aiReply = data.choices[0].message.content;
-
-        // 5. Hapus loading dan tampilkan jawaban AI (Warna Putih/Abu)
-        document.getElementById(loadingId).remove();
-        chatbox.innerHTML += `
-            <div class="flex justify-start mb-4">
-                <div class="bg-white text-gray-800 text-sm p-3 rounded-lg rounded-tl-none shadow-sm border border-gray-200 max-w-[85%] leading-relaxed whitespace-pre-wrap">
-                    ${aiReply}
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        document.getElementById(loadingId).remove();
-        chatbox.innerHTML += `
-            <div class="flex justify-start mb-4">
-                <div class="bg-red-50 text-red-600 text-sm p-3 rounded-lg rounded-tl-none border border-red-200 max-w-[85%]">
-                    <strong>Error:</strong> Failed to connect to Local AI. Please ensure LM Studio server is running at 127.0.0.1:1234.
-                </div>
-            </div>
-        `;
-    }
-    chatbox.scrollTop = chatbox.scrollHeight;
+  } catch(e) {
+    document.getElementById(loadingId).remove();
+    box.innerHTML += `<div class="m-ai" style="color:#ff4444">Error: Koneksi server AI terputus. Pastikan LM Studio dan Ngrok aktif.</div>`;
+    chatHistory.pop(); 
+  }
+  box.scrollTop = box.scrollHeight;
 }
 
-document.getElementById('userInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') kirimPesan();
+// 3. Event Listener Tombol Enter
+document.getElementById('userInput').addEventListener('keypress', e => { 
+    if (e.key === 'Enter') sendMsg(); 
 });
