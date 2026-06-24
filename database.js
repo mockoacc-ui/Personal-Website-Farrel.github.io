@@ -75,10 +75,15 @@ const KNOWLEDGE_BASE = `
 - Dia orang Semarang
 - Rambutnya hitam badannya kecil
 - Wajahnya cantik sekali seperti bidadari
-- Kulitnya berwarna sawo matang, matanya hitam pekat
+- dia suka makan cilok, dan bacilada.
+- dia adalah seorang event organizer yang jago, dia punya banyak proyek. mengikuti wo dan lagi mengurus skripsi tentang event yoga
 - Makanan Favoritnya adalah golden geisha
 - Dia memilik kucing yang bernama Joiyy
 - Dia tinggal di madukoro
+- Dia kadang wangi, kadang engga.
+- dia suka marah tp lucu
+- dia suka nyanyi tp suaranya jelek
+- dia sangat perhatian padaku.
 - Dia adalah mahasiswa D4 Vokasi Hubungan Masyarakat
 - Aku sangat ingin menikah dengannya
 - Panggilannya adalah aya
