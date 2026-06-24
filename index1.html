@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farrel Pratama — Interactive Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.33/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<style>
+/* ── BASE & VARIABLES ── */
+:root {
+  --bg: #030303;
+  --card-bg: rgba(255, 255, 255, 0.02);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #f5f5f5;
+  --text-muted: #888;
+  --accent: #fff;
+  --radius: 24px;
+  --sans: 'Inter', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html.lenis { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body { 
+  font-family: var(--sans); 
+  background: var(--bg); 
+  color: var(--text-main); 
+  overflow-x: hidden; 
+  padding: 120px 24px 80px;
+  cursor: none; 
+}
+
+/* ── CUSTOM CURSOR ── */
+.cursor-dot {
+  width: 8px; height: 8px; background: var(--text-main);
+  border-radius: 50%; position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9999; transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s;
+}
+.cursor-ring {
+  width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 50%; position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9998; transform: translate(-50%, -50%);
+  transition: transform 0.1s ease-out, width 0.3s, height 0.3s, background 0.3s;
+}
+.hovering .cursor-dot { width: 0; height: 0; }
+.hovering .cursor-ring { width: 60px; height: 60px; background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); border-color: transparent; }
+
+/* ── AMBIENT BACKGROUND GLOW ── */
+.ambient-glow {
+  position: fixed; top: -20%; left: -10%; width: 60vw; height: 60vw;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+  border-radius: 50%; pointer-events: none; z-index: -1;
+  animation: float 20s ease-in-out infinite alternate;
+}
+.ambient-glow.two { top: auto; bottom: -20%; left: auto; right: -10%; background: radial-gradient(circle, rgba(0,255,102,0.02) 0%, transparent 60%); animation-delay: -10s; }
+@keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(10%, 15%) scale(1.2); } }
+
+/* ── PILL NAV ── */
+nav {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 100; display: flex; align-items: center; gap: 8px;
+  background: rgba(10, 10, 10, 0.6); backdrop-filter: blur(20px);
+  padding: 8px; border-radius: 99px; border: 1px solid var(--card-border);
+}
+.nav-links { display: flex; gap: 4px; }
+.nav-links a {
+  font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none;
+  padding: 10px 20px; border-radius: 99px; transition: 0.3s;
+}
+.nav-links a:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+.nav-cta { background: var(--text-main); color: var(--bg); font-size: 13px; font-weight: 600; padding: 10px 24px; border-radius: 99px; text-decoration: none; transition: 0.3s; }
+.nav-cta:hover { transform: scale(0.95); }
+
+/* ── BENTO GRID & 3D CARDS ── */
+.sec-wrapper { max-width: 1200px; margin: 0 auto 100px; scroll-margin-top: 100px; }
+.sec-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 30px; display: block; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; }
+
+.bento-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  grid-auto-rows: minmax(180px, auto);
+}
+
+.bento-card {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 32px;
+  display: flex; flex-direction: column; backdrop-filter: blur(10px);
+  position: relative; overflow: hidden;
+  transform-style: preserve-3d;
+  transform: perspective(1000px);
+}
+
+.span-1 { grid-column: span 1; }
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+.span-4 { grid-column: span 4; }
+.row-2 { grid-row: span 2; }
+
+/* ── FOTO INLINE & ABSOLUTE ── */
+.inline-img-box {
+  width: 100%; border-radius: 16px; overflow: hidden; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.5);
+}
+.inline-img-box img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(80%) brightness(0.8); transition: filter 0.5s, transform 0.5s;
+}
+.bento-card:hover .inline-img-box img { filter: grayscale(0%) brightness(1); transform: scale(1.05); }
+
+.img-container {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  overflow: hidden; border-radius: var(--radius); z-index: -1;
+}
+.img-container::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%); }
+.img-container img { width: 100%; height: 130%; object-fit: cover; position: absolute; top: -15%; left: 0; filter: grayscale(80%); transition: filter 0.5s; }
+.bento-card:hover .img-container img { filter: grayscale(0%); }
+
+/* ── TYPOGRAPHY & COMPONENTS ── */
+.hero-title { font-size: clamp(36px, 5vw, 56px); font-weight: 600; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: 16px; }
+.hero-title span { color: rgba(255,255,255,0.4); }
+.card-title { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 12px; }
+.card-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+.card-tag { display: inline-block; font-size: 11px; font-family: monospace; color: var(--text-main); background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 6px; text-transform: uppercase; margin-bottom: auto; width: fit-content; }
+
+/* Timeline */
+.tl-item { border-left: 1px solid var(--card-border); padding-left: 20px; position: relative; margin-bottom: 24px; }
+.tl-item::before { content: ''; position: absolute; left: -4px; top: 6px; width: 7px; height: 7px; background: var(--text-main); border-radius: 50%; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-date { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-family: monospace; }
+.tl-role { font-size: 18px; font-weight: 600; }
+.tl-company { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+
+/* Contact & Buttons */
+.contact-heading { font-size: clamp(50px, 9vw, 130px); font-weight: 700; line-height: 0.9; letter-spacing: -0.05em; margin-bottom: 40px; }
+.contact-heading span { color: var(--text-muted); font-weight: 500; }
+.contact-flex { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.contact-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 16px 36px; border: 1px solid var(--card-border); border-radius: 99px;
+  background: var(--card-bg); backdrop-filter: blur(10px);
+  color: var(--text-main); font-size: 16px; font-weight: 500; text-decoration: none;
+  transition: all 0.3s;
+}
+.contact-btn:hover { background: var(--text-main); color: var(--bg); transform: translateY(-4px); border-color: var(--text-main); }
+.proj-btn { margin-top: auto; display: inline-block; font-size: 13px; font-weight: 500; color: var(--text-main); text-decoration: none; border-bottom: 1px solid var(--text-main); padding-bottom: 2px; width: fit-content; transition: 0.3s; }
+.proj-btn:hover { color: #00ff66; border-color: #00ff66; }
+
+/* ── MINI CASE STUDY STYLES ── */
+.case-study-card { display: flex; flex-direction: column; gap: 20px; }
+.cs-header { border-bottom: 1px solid var(--card-border); padding-bottom: 16px; margin-bottom: 8px; }
+.cs-title { font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+.cs-grid { display: flex; flex-direction: column; gap: 16px; }
+.cs-step { display: grid; grid-template-columns: 90px 1fr; gap: 16px; align-items: start; }
+.cs-label {
+  font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 4px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; border-left: 2px solid var(--accent);
+}
+.cs-value { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+.cs-value strong { color: var(--text-main); font-weight: 500; }
+.cs-result { background: rgba(0, 255, 102, 0.05); border: 1px solid rgba(0, 255, 102, 0.15); border-left: 2px solid #00ff66; }
+.cs-result .cs-label { color: #00ff66; background: transparent; border: none; padding: 0; padding-top: 2px; }
+.cs-result .cs-value { color: #e0ffe8; }
+
+/* ── CUSTOM FOOTER ── */
+.custom-footer {
+  text-align: center; margin-top: 80px; padding: 40px 20px;
+  border-top: 1px solid var(--card-border);
+  font-size: 13px; color: var(--text-muted);
+}
+.custom-footer span { color: #00ff66; font-weight: 600; }
+
+/* ── CHAT WIDGET ── */
+/* ── CHAT WIDGET TERPERBAIKI ── */
+#chat-widget {
+  position: fixed; bottom: 32px; right: 32px; z-index: 200; width: 380px;
+  /* Pastikan background-nya menggunakan nilai rgba yang tembus pandang */
+  background: rgba(5, 5, 5, 0.6); 
+  backdrop-filter: blur(40px);
+  border: 1px solid var(--card-border); 
+  border-radius: 28px;
+  display: flex; flex-direction: column; overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.2, 1, 0.2, 1); max-height: 600px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 900px) {
+  #chat-widget { 
+    bottom: 10px; right: 10px; 
+    /* Fokus ke sini: Biar gak nabrak keyboard */
+    max-height: 60vh; 
+  }
+}
+#chat-widget.collapsed { max-height: 64px; width: 280px; border-radius: 99px; }
+.chat-hd { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; cursor: pointer; }
+.chat-ttl { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.chat-ttl .pulse { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+#chatbox { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 350px; }
+.m-ai, .m-user { font-size: 13px; line-height: 1.5; max-width: 85%; padding: 12px 16px; border-radius: 16px; }
+.m-ai { background: rgba(255,255,255,0.05); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
+.m-user { background: var(--text-main); color: var(--bg); align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
+.chat-ft { padding: 16px; border-top: 1px solid var(--card-border); display: flex; gap: 8px; }
+.chat-ft input { flex: 1; background: transparent; border: 1px solid var(--card-border); border-radius: 99px; padding: 12px 20px; color: var(--text-main); font-size: 13px; outline: none; transition: 0.3s; }
+.chat-ft input:focus { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.02); }
+.chat-send2 { background: var(--text-main); border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+
+/* Utilities */
+.gsap-reveal { opacity: 0; transform: translateY(40px) scale(0.97); }
+
+/* ── MUSIC PLAYER WIDGET ── */
+#music-player {
+  position: fixed; bottom: 32px; left: 32px; z-index: 199;
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(5, 5, 5, 0.6); backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border); border-radius: 99px;
+  padding: 10px 18px 10px 14px; cursor: pointer; transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+#music-player:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+.vinyl-icon { width: 28px; height: 28px; color: #fff; display: flex; align-items: center; justify-content: center; }
+.vinyl-icon svg { width: 100%; height: 100%; }
+.spin-anim { animation: spinVinyl 3s linear infinite; }
+@keyframes spinVinyl { 100% { transform: rotate(360deg); } }
+.track-info { display: flex; flex-direction: column; }
+.track-name { font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
+.track-status { font-size: 10px; color: #00ff66; font-family: monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+.track-status.paused { color: var(--text-muted); }
+
+/* ── MOBILE RESPONSIVENESS (PERBAIKAN TOTAL) ── */
+@media (max-width: 900px) {
+  /* Paksa Grid jadi 1 Kolom */
+  .bento-grid { grid-template-columns: 1fr !important; gap: 16px; }
+  .span-1, .span-2, .span-3, .span-4 { grid-column: span 1 !important; }
+  .row-2 { grid-row: span 1 !important; min-height: auto; }
+  
+  body { padding: 100px 16px 120px; cursor: auto; }
+  .cursor-dot, .cursor-ring { display: none; }
+  
+  nav { width: 90%; max-width: 400px; overflow-x: auto; border-radius: 16px; justify-content: flex-start; }
+  nav::-webkit-scrollbar { display: none; }
+  .nav-links { flex-shrink: 0; }
+  
+  /* Perbaikan Teks Skripsi Biar Gak Nabrak */
+  .cs-step { grid-template-columns: 1fr !important; gap: 8px; }
+  .cs-label { width: fit-content; }
+  
+  /* Tata Letak AI Chat biar gak nimpa musik */
+  #chat-widget { 
+    bottom: 85px; right: 16px; left: 16px; 
+    width: calc(100% - 32px) !important; 
+    border-radius: 20px; z-index: 200; 
+  }
+  #chat-widget.collapsed { 
+    width: 170px !important; bottom: 20px; right: 16px; left: auto; 
+  }
+  
+  /* Tata Letak Music Player di HP */
+  #music-player { 
+    bottom: 20px; left: 16px; 
+    padding: 8px 14px; max-width: 160px; z-index: 199; 
+  }
+  .track-info { max-width: 90px; }
+  .track-name { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .hero-title { font-size: 32px; }
+  .contact-heading { font-size: 40px; }
+}
+</style>
+</head>
+<body>
+
+  <!-- Pemutar Lagu Puddle of Mudd -->
+  <audio id="bg-music" loop>
+    <source src="Blurry.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Widget Piringan Hitam -->
+  <div id="music-player" class="hover-target" onclick="toggleMusic()">
+    <div class="vinyl-icon" id="vinyl">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" fill="#111"></circle>
+        <circle cx="12" cy="12" r="3" stroke="#555"></circle>
+        <circle cx="12" cy="12" r="1" fill="#fff"></circle>
+      </svg>
+    </div>
+    <div class="track-info">
+      <span class="track-name">Puddle of Mudd - Blurry</span>
+      <span class="track-status paused" id="track-status">Click to Play</span>
+    </div>
+  </div>
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+<div class="ambient-glow"></div>
+<div class="ambient-glow two"></div>
+
+<nav class="hover-target">
+  <div class="nav-links">
+    <a href="#profil">Profile</a>
+    <a href="#pengalaman">Experience</a>
+    <a href="#organisasi">Leadership</a>
+    <a href="#proyek">Projects</a>
+    <a href="#fea-gallery">FEA Gallery</a>
+  </div>
+  <a href="#contact" class="nav-cta hover-target">Let's Talk</a>
+</nav>
+
+<div class="sec-wrapper" id="profil">
+  <span class="sec-label">01 / Profile</span>
+  <div class="bento-grid">
+    
+    <div class="bento-card span-3 row-2 gsap-reveal hover-3d hover-target" style="justify-content: flex-end;">
+      <div class="card-tag" style="margin-bottom: 20px;">Mechanical Engineer</div>
+      
+      <div class="inline-img-box" style="height: 220px; margin-bottom: 32px;">
+        <img src="teknik mesin.jpg" alt="Engineering Banner">
+      </div>
+
+      <h1 class="hero-title">Muhammad Farrel Pratama Wicaksono.<br><span>Mechanical Simulation, Design & Automation.</span></h1>
+      <p class="card-text" style="max-width: 600px; font-size: 16px;">Mahasiswa Teknik Mesin UNDIP Semester 8. Menjembatani keandalan mekanikal industri skala besar dengan simulasi komputasional (FEA) dan integrasi automasi AI melalui Python.</p>
+    </div>
+
+    <div class="bento-card span-1 row-2 gsap-reveal hover-3d hover-target" style="padding: 0;">
+      <div class="img-container">
+        <img src="pp.jpeg" alt="Farrel Pratama" class="parallax-img">
+      </div>
+      <div style="position: absolute; bottom: 24px; left: 24px; z-index: 1;">
+        <div class="card-title" style="margin:0; font-size: 18px;">Semarang, ID</div>
+      </div>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="text-align: center; justify-content: center; padding: 24px;">
+      <div style="font-size: 40px; font-weight: 700; line-height: 1; color: var(--text-main);">2</div>
+      <div style="font-size: 10px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-top: 8px;">INDUSTRIAL INTERNSHIPS</div>
+    </div>
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="text-align: center; justify-content: center; padding: 24px;">
+      <div style="font-size: 40px; font-weight: 700; line-height: 1; color: var(--text-main);">1</div>
+      <div style="font-size: 10px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-top: 8px;">RESEARCH CENTER</div>
+    </div>
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="text-align: center; justify-content: center; padding: 24px;">
+      <div style="font-size: 40px; font-weight: 700; line-height: 1; color: var(--text-main);">3+</div>
+      <div style="font-size: 10px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-top: 8px;">YEARS LEADERSHIP</div>
+    </div>
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="text-align: center; justify-content: center; padding: 24px;">
+      <div style="font-size: 40px; font-weight: 700; line-height: 1; color: var(--text-main);">10+</div>
+      <div style="font-size: 10px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-top: 8px;">ENGINEERING PROJECTS</div>
+    </div>
+
+    <div class="bento-card span-2 gsap-reveal hover-3d hover-target">
+      <div class="card-tag" style="margin-bottom: 20px;">Technical Arsenal</div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1;">
+        
+        <div style="background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);">
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: #fff;">Engineering</div>
+          <div style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>SolidWorks</div>
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>ANSYS Mech</div>
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>Workbench</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);">
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: #fff;">Programming</div>
+          <div style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>Python</div>
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>Selenium</div>
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>CCXT</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--card-border);">
+          <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: #fff;">AI / Prompt</div>
+          <div style="font-size: 12px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>LM Studio</div>
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>Prompt Eng.</div>
+            <div><span style="color:#00ff66; margin-right:4px;">▹</span>Local LLM</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="bento-card span-2 gsap-reveal hover-3d hover-target" style="display: flex; flex-direction: column;">
+      <div class="card-tag" style="margin-bottom: 20px; width: fit-content;">Growth Mindset</div>
+      <div class="card-title" style="font-size: 20px; margin-bottom: 20px;">Professional Development</div>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; justify-content: center; flex: 1;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <div style="font-size: 14px; font-weight: 500;">CSWA Certification</div>
+          <div style="margin-left: auto; font-size: 11px; color: #00ff66; background: rgba(0,255,102,0.1); padding: 4px 8px; border-radius: 4px; font-weight: 600;">In Progress</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <div style="font-size: 14px; font-weight: 500; color: var(--text-muted);">ANSYS Learning Path</div>
+          <div style="margin-left: auto; font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px;">In Progress</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 12px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <div style="font-size: 14px; font-weight: 500; color: var(--text-muted);">Python Automation</div>
+          <div style="margin-left: auto; font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px;">In Progress</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sec-wrapper" id="pengalaman">
+  <span class="sec-label">02 / Experience</span>
+  <div class="bento-grid">
+    
+    <div class="bento-card span-2 row-2 gsap-reveal hover-3d hover-target">
+      <div class="card-tag">Industrial Internships</div>
+      <div class="inline-img-box" style="height: 180px; margin-top: 24px; margin-bottom: 24px;">
+        <img src="rapp boiler.jpg" alt="Corporate Work">
+      </div>
+      <div>
+        <div class="tl-item">
+          <div class="tl-date">Jul 2025 — Aug 2025</div>
+          <div class="tl-role">Boiler Maintenance Engineer</div>
+          <div class="tl-company">APRIL Group (PT RAPP)</div>
+          <p class="card-text">Eksekusi repair technique material kritis perpipaan Grade 91 pada area Hot Reheater untuk memastikan keandalan *power boiler* industri.</p>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">Dec 2024 — Feb 2025</div>
+          <div class="tl-role">Mechanical Maintenance Engineer</div>
+          <div class="tl-company">PT Angkasa Pura Indonesia</div>
+          <p class="card-text">Failure analysis sistem pneumatik pengereman kereta (twin tower air dryer, control valves) Skytrain APMS Bandara Soekarno-Hatta guna mengatasi *pressure loss*.</p>
+          <div class="inline-img-box" style="height: 220px; margin-top: 16px;">
+            <img src="Angkasa Pura.jpg" alt="APMS Skytrain">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bento-card span-2 row-2 gsap-reveal hover-3d hover-target" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div class="card-tag" style="margin-bottom: 12px;">Academic Research</div>
+        <div class="card-title" style="font-size: 18px;">Undip Biomechanics Engineering and Research Centre</div>
+        <p class="card-text" style="font-size: 13px;">Riset laboratorium mendalam menggunakan kapabilitas ANSYS Mechanical & SolidWorks.</p>
+      </div>
+      <div class="inline-img-box" style="height: 280px; margin: 24px 0;">
+        <img src="Lab.jpeg" alt="Laboratory / 3D Design">
+      </div>
+      <div>
+        <div class="card-title" style="font-size: 18px;">Belajar Engineering</div>
+        <p class="card-text" style="font-size: 13px;">Freelance 3D Design. Menangani Weldments, Gear Mates, dan part kompleks seperti shaft & rivet.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="sec-wrapper" id="organisasi">
+  <span class="sec-label">03 / Leadership</span>
+  <div class="bento-grid">
+    
+    <div class="bento-card span-2 gsap-reveal hover-3d hover-target">
+      <div class="card-tag">Student Leadership</div>
+      <div style="margin-top: 20px;">
+        <div class="card-title">Komting Angkatan 2022</div>
+        <p class="card-text">Memimpin dan meregulasi 176 mahasiswa Teknik Mesin angkatan 2022 dalam kegiatan struktural dan akademik.</p>
+      </div>
+      <div style="margin-top: 20px;">
+        <div class="card-title">Dewan Penelitian dan Pengembangan HMM UNDIP</div>
+        <p class="card-text">Pembicara pada Leadership Training, mengajar "Thinking & Decision Making" melalui pendekatan Design Thinking.</p>
+      </div>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 0;">
+      <div class="img-container">
+        <img src="pilar.jpeg" alt="Leadership HMM" class="parallax-img">
+      </div>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="justify-content: center; align-items: center; text-align: center;">
+      <div style="font-size: 64px; font-weight: 700; line-height: 1;">176</div>
+      <div style="font-size: 12px; color: var(--text-muted); font-family: monospace;">STUDENTS LED</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="sec-wrapper" id="proyek">
+  <span class="sec-label">04 / Technical Case Studies</span>
+  <div class="bento-grid" style="grid-template-columns: repeat(2, 1fr);">
+    
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target case-study-card">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 12px;">
+        <img src="AnsysGigi.png" alt="ANSYS FEA Implan">
+      </div>
+      <div class="cs-header">
+        <div class="card-tag" style="margin-bottom: 12px;">Thesis Project</div>
+        <div class="cs-title">FEA Implan Gigi Aksial</div>
+      </div>
+      <div class="cs-grid">
+        <div class="cs-step">
+          <div class="cs-label">Problem</div>
+          <div class="cs-value">Kebutuhan memvalidasi distribusi tegangan akibat sudut kemiringan abutment pada implan rahang bawah.</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Approach</div>
+          <div class="cs-value">Mensimulasikan pembebanan murni secara aksial pada model 3D implan untuk mengukur ketahanan material.</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Tools</div>
+          <div class="cs-value"><strong>ANSYS Workbench</strong>, SolidWorks.</div>
+        </div>
+        <div class="cs-step cs-result" style="padding: 12px; border-radius: 8px;">
+          <div class="cs-label">Result</div>
+          <div class="cs-value">Pemetaan <strong>Stress Distribution</strong> yang tervalidasi secara komputasional.</div>
+        </div>
+      </div>
+      <a href="https://drive.google.com/file/d/1pjoHvoRwJcyxnHh_E3L1sumyjIkL614O/view?usp=drive_link" target="_blank" class="proj-btn" style="margin-top:20px;">View Structural Data (PDF)</a>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target case-study-card">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 12px;">
+        <img src="coding.png" alt="Crypto Bot">
+      </div>
+      <div class="cs-header">
+        <div class="card-tag" style="margin-bottom: 12px;">Embedded Engineer</div>
+        <div class="cs-title">Crypto/Stock Bot</div>
+      </div>
+      <div class="cs-grid">
+        <div class="cs-step">
+          <div class="cs-label">Problem</div>
+          <div class="cs-value">Kebutuhan akan monitoring emiten pasar modal secara real-time tanpa terdistraksi bias emosi manusia.</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Approach</div>
+          <div class="cs-value">Membangun skrip algoritma mandiri untuk mengumpulkan data bursa dan mengeksekusi order (bracket order).</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Tools</div>
+          <div class="cs-value"><strong>Python</strong>, Selenium, CCXT API.</div>
+        </div>
+        <div class="cs-step cs-result" style="padding: 12px; border-radius: 8px;">
+          <div class="cs-label">Result</div>
+          <div class="cs-value">Sistem <strong>Automated Screening</strong> & eksekusi pasar beroperasi penuh 24/7.</div>
+        </div>
+      </div>
+      <a href="https://github.com/farrel-wicaksono/crypto-screener-bot" target="_blank" class="proj-btn" style="margin-top:20px;">Review Code Repository</a>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target case-study-card">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 12px;">
+        <img src="komposter.png" alt="Komposter KKN">
+      </div>
+      <div class="cs-header">
+        <div class="card-tag" style="margin-bottom: 12px;">Solidworks Design</div>
+        <div class="cs-title">Komposter Skala Rumah</div>
+      </div>
+      <div class="cs-grid">
+        <div class="cs-step">
+          <div class="cs-label">Problem</div>
+          <div class="cs-value">Ketiadaan fasilitas pengelolaan dan sanitasi limbah komunal di area KKN Ngemplak Simongan.</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Approach</div>
+          <div class="cs-value">Merancang purwarupa alat komposter portabel dengan mengkonversi material daur ulang (drum bekas).</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Tools</div>
+          <div class="cs-value"><strong>SolidWorks</strong> (3D CAD).</div>
+        </div>
+        <div class="cs-step cs-result" style="padding: 12px; border-radius: 8px;">
+          <div class="cs-label">Result</div>
+          <div class="cs-value">Menghasilkan <strong>Blueprints</strong> siap manufaktur untuk warga desa.</div>
+        </div>
+      </div>
+      <a href="https://drive.google.com/uc?export=download&id=" target="_blank" class="proj-btn" style="margin-top:20px;">View 3D Render Blueprint</a>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target case-study-card">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 12px;">
+        <img src="Pemotong Kacang.png" alt="Pengupas Kacang Kedelai">
+      </div>
+      <div class="cs-header">
+        <div class="card-tag" style="margin-bottom: 12px;">Mechanical Design</div>
+        <div class="cs-title">Alat Pengupas Kedelai</div>
+      </div>
+      <div class="cs-grid">
+        <div class="cs-step">
+          <div class="cs-label">Problem</div>
+          <div class="cs-value">Proses pengupasan kulit ari kacang kedelai secara manual yang lambat dan membatasi volume produksi.</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Approach</div>
+          <div class="cs-value">Perancangan arsitektur transmisi mekanikal (pulley & shaft) untuk mengotomatisasi proses gesekan pengupasan.</div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-label">Tools</div>
+          <div class="cs-value"><strong>SolidWorks</strong>, Engineering Mechanics.</div>
+        </div>
+        <div class="cs-step cs-result" style="padding: 12px; border-radius: 8px;">
+          <div class="cs-label">Result</div>
+          <div class="cs-value">Desain mesin <strong>Otomatisasi Produksi</strong> yang terukur dan presisi.</div>
+        </div>
+      </div>
+      <a href="https://www.linkedin.com/in/farrel-pratama-wicaksono/details/projects/" target="_blank" class="proj-btn" style="margin-top:20px;">View LinkedIn Showcase</a>
+    </div>
+    <!-- Tambahan Publikasi Paper -->
+<div class="bento-card span-1 gsap-reveal hover-3d hover-target case-study-card">
+  <div class="inline-img-box" style="height: 180px; margin-bottom: 12px;">
+    <img src="icenis.png" alt="Publikasi ICENIS">
+  </div>
+  <div class="cs-header">
+    <div class="card-tag" style="margin-bottom: 12px;">Publication</div>
+    <div class="cs-title">ICENIS Paper</div>
+  </div>
+  <p class="card-text">Publikasi riset ilmiah dalam ajang International Conference on Energy, Environment, Epidemiology and Information System.</p>
+  <a href="https://drive.google.com/file/d/1N66EdU683JXHchh_5QWoBmaiV1BoExE8/view?usp=drive_link" class="proj-btn" style="margin-top:20px;">Read Abstract</a>
+</div>
+
+<div class="bento-card span-1 gsap-reveal hover-3d hover-target case-study-card">
+  <div class="inline-img-box" style="height: 180px; margin-bottom: 12px;">
+    <img src="INCRID.png" alt="Publikasi INCRID">
+  </div>
+  <div class="cs-header">
+    <div class="card-tag" style="margin-bottom: 12px;">Publication</div>
+    <div class="cs-title">INCRID Paper</div>
+  </div>
+  <p class="card-text">Publikasi riset dalam International Conference on Resilience and Innovation in Design.</p>
+  <a href="https://drive.google.com/file/d/1xWRZzj93Mm14N3Nu7vvyVdHRLnP8b191/view?usp=drive_link" class="proj-btn" style="margin-top:20px;">Read Abstract</a>
+</div>
+
+  </div>
+</div>
+
+<div class="sec-wrapper" id="fea-gallery">
+  <span class="sec-label">05 / Computational Validations (FEA)</span>
+  
+  <div class="bento-grid" style="margin-bottom: 20px;">
+    <div class="bento-card span-4 gsap-reveal hover-3d hover-target" style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 32px 40px; flex-wrap: wrap; gap: 24px;">
+      <div>
+        <div class="card-tag" style="margin-bottom: 12px; background: rgba(255, 165, 0, 0.1); color: #ffaa00; border: 1px solid rgba(255, 165, 0, 0.2);">Case 1: Structural Analysis</div>
+        <div class="card-title" style="font-size: 28px; margin: 0;">Dental Implant FEA</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Simulasi tegangan akibat variasi kemiringan sudut abutment.</div>
+      </div>
+      <div style="display: flex; gap: 40px; text-align: left; flex-wrap: wrap;">
+        <div>
+          <div style="font-size: 11px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-bottom: 6px;">MAX EQUIVALENT STRESS</div>
+          <div style="font-size: 28px; font-weight: 700; color: #ff4444; line-height: 1;">30.48 <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">MPa</span></div>
+        </div>
+        <div style="width: 1px; background: var(--card-border);"></div>
+        <div>
+          <div style="font-size: 11px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-bottom: 6px;">MIN. SAFETY FACTOR</div>
+          <div style="font-size: 28px; font-weight: 700; color: #00ff66; line-height: 1;">> 1.5 <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">SF</span></div>
+        </div>
+        <div style="width: 1px; background: var(--card-border);"></div>
+        <div>
+          <div style="font-size: 11px; color: var(--text-muted); font-family: monospace; letter-spacing: 0.1em; margin-bottom: 6px;">SOLVER</div>
+          <div style="font-size: 20px; font-weight: 700; color: var(--text-main); line-height: 1.2;">ANSYS<br><span style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Workbench</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bento-grid">
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 24px;">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 20px;">
+        <img src="mesh.jpg" alt="Mesh Generation">
+      </div>
+      <div style="font-family: monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">STEP 01</div>
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Mesh Generation</div>
+      <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Refinement matriks elemen pada area ulir/thread implant yang rawan konsentrasi tegangan.</div>
+    </div>
+    
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 24px;">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 20px;">
+        <img src="boundary.jpg" alt="Boundary Conditions">
+      </div>
+      <div style="font-family: monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">STEP 02</div>
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Boundary Conditions</div>
+      <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Definisi <em>Fixed Support</em> pada basis tulang rahang dan aplikasi gaya aksial (N).</div>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 24px;">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 20px;">
+        <img src="deformation.jpg" alt="Total Deformation">
+      </div>
+      <div style="font-family: monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">RESULT A</div>
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Total Deformation</div>
+      <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Plot kontur untuk memvisualisasikan pergeseran maksimal struktur akibat pembebanan.</div>
+    </div>
+
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 24px;">
+      <div class="inline-img-box" style="height: 180px; margin-bottom: 20px;">
+        <img src="vonmises.jpg" alt="Von-Mises Stress">
+      </div>
+      <div style="font-family: monospace; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">RESULT B</div>
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Von-Mises Stress</div>
+      <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Lokalisasi titik kritis tegangan ekuivalen (Max: 30.48 MPa) untuk mengevaluasi batas luluh material.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec-wrapper" id="contact" style="text-align: center; margin-top: 150px; margin-bottom: 40px;">
+  <h2 class="contact-heading gsap-reveal">LET'S WORK<br><span>TOGETHER.</span></h2>
+  <div class="contact-flex gsap-reveal">
+    <a href="CV-Farrel-Pratama.pdf" target="_blank" download class="contact-btn hover-target" style="background: var(--text-main); color: var(--bg); border-color: var(--text-main);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Download Resume
+    </a>
+    <a href="https://wa.me/6281316572888" target="_blank" class="contact-btn hover-target">WhatsApp: +62 813-1657-2888</a>
+    <a href="https://www.linkedin.com/in/farrel-pratama-wicaksono/" target="_blank" class="contact-btn hover-target">LinkedIn Profile</a>
+  </div>
+</div>
+
+<div class="custom-footer gsap-reveal">
+  Website ini dibuat secara mandiri (Handcoded) 👨‍💻.<br>Bukan pakai <span>template instan</span> atau jasa Hostinger wkwkwk.
+</div>
+
+<div id="chat-widget" class="collapsed hover-target">
+  <div class="chat-hd" onclick="toggleChat()">
+    <div class="chat-ttl"><div class="pulse"></div> Click Me </div>
+    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+  </div>
+  <div id="chatbox">
+    <div class="m-ai">System Online. Saya adalah kembaran dari Farrel. Tanyakan profil saya, skill yang dikuasai meliputi solidworks, ansys, maupun vs code dan juga bagaimana caranya bekerja sama ataupun informasi yang kamu inginkan di room chat ini yaa. AI buatan saya siap melayanimu, semoga bermanfaat. </div>
+  </div>
+  <div class="chat-ft">
+    <input type="text" id="userInput" placeholder="Ketik perintah..."/>
+    <button class="chat-send2 hover-target" onclick="sendMsg()">
+      <svg width="16" height="16" fill="none" stroke="#000" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+<div class="sec-wrapper" id="dev-journey">
+  <span class="sec-label">06 / Development Journey</span>
+  <div class="bento-grid">
+    
+    <!-- Foto Utama -->
+    <div class="bento-card span-4 gsap-reveal hover-3d hover-target">
+      <div class="card-title">Behind the Code</div>
+      <p class="card-text" style="margin-bottom: 20px;">
+        Dokumentasi proses build website ini. Murni handcoded oleh <strong>Farrel Pratama</strong> pada 23-6-26. 
+      </p>
+      <div class="inline-img-box" style="height: 300px;">
+        <img src="5.png" alt="Dev Process 1">
+      </div>
+    </div>
+
+    <!-- 4 Foto Pendukung -->
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 0;">
+      <div class="inline-img-box" style="height: 100%;">
+        <img src="2.png" alt="Dev Process 2">
+      </div>
+    </div>
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 0;">
+      <div class="inline-img-box" style="height: 100%;">
+        <img src="3.png" alt="Dev Process 3">
+      </div>
+    </div>
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 0;">
+      <div class="inline-img-box" style="height: 100%;">
+        <img src="1.png" alt="Dev Process 4">
+      </div>
+    </div>
+    <div class="bento-card span-1 gsap-reveal hover-3d hover-target" style="padding: 0;">
+      <div class="inline-img-box" style="height: 100%;">
+        <img src="4.png" alt="Dev Process 5">
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<script src="database.js"></script>
+<script src="ai-logic.js"></script>
+
+<script>
+document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('href');
+    const targetElement = document.querySelector(targetId);
+    if (targetElement) {
+      lenis.scrollTo(targetElement, { offset: -80, duration: 1.5, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    }
+  });
+});
+
+const cursorDot = document.querySelector('.cursor-dot');
+const cursorRing = document.querySelector('.cursor-ring');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+window.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursorDot.style.transform = `translate(calc(${mouseX}px - 50%), calc(${mouseY}px - 50%))`;
+});
+
+function animateCursor() {
+  ringX += (mouseX - ringX) * 0.15;
+  ringY += (mouseY - ringY) * 0.15;
+  cursorRing.style.transform = `translate(calc(${ringX}px - 50%), calc(${ringY}px - 50%))`;
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+document.querySelectorAll('.hover-target').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+});
+
+const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+requestAnimationFrame(raf);
+
+gsap.registerPlugin(ScrollTrigger);
+
+gsap.utils.toArray('.gsap-reveal').forEach((elem) => {
+  gsap.to(elem, { scrollTrigger: { trigger: elem, start: "top 95%" }, y: 0, scale: 1, opacity: 1, duration: 1, ease: "power3.out" });
+});
+
+gsap.utils.toArray('.parallax-img').forEach((img) => {
+  gsap.to(img, { yPercent: 15, ease: "none", scrollTrigger: { trigger: img.parentElement.parentElement, start: "top bottom", end: "bottom top", scrub: true } });
+});
+
+const cards = document.querySelectorAll('.hover-3d');
+cards.forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left; 
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -4; 
+    const rotateY = ((x - centerX) / centerX) * 4;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(0.98, 0.98, 0.98)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+  });
+});
+
+let open = false;
+function toggleChat() {
+  open = !open;
+  document.getElementById('chat-widget').classList.toggle('collapsed', !open);
+}
+
+// --- FITUR BACKGROUND MUSIC TAMPAN ---
+const music = document.getElementById('bg-music');
+music.volume = 0.2; // Volume 20% biar elegan
+
+function toggleMusic() {
+  const vinyl = document.getElementById('vinyl');
+  const status = document.getElementById('track-status');
+  
+  if (music.paused) {
+    music.play().then(() => {
+      vinyl.classList.add('spin-anim'); // Putar piringan
+      status.innerText = "Now Playing";
+      status.classList.remove('paused');
+    }).catch(e => console.log("Autoplay diblokir, butuh interaksi user."));
+  } else {
+    music.pause();
+    vinyl.classList.remove('spin-anim'); // Hentikan piringan
+    status.innerText = "Paused";
+    status.classList.add('paused');
+  }
+}
+</script>
+</body>
+</html>
