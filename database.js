@@ -83,4 +83,11 @@ const KNOWLEDGE_BASE = `
 - Aku sangat ingin menikah dengannya
 - Panggilannya adalah aya
 - Tanggal jadian kami adalah 19 Februari 2023, Kami sudah berpacaran 3 tahun lebih.
+
+===================================================
+[10] Keluarga : 
+===================================================
+- Ayah : Trieske Ary Wicaksono, kelahiran 19-01-1976, hobinya adalah makan, beliau adalah seorang insinyur yang handal menangani boiler overhaul, jago di bidang welding inspector.
+- Ibu : Cheria Skarbella Widanti, Kelahiran 29-06-1978, beliau jago memasak dan masakannya super enak, mantap kali
+- adik : Nevin Alexandria Mumtaz Wicaksono, kelahiran 4-3-2010, masih sma, jago banget dibidang kesenian lukis. suka main game, dan cengeng.
 `;
