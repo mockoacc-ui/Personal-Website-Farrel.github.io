@@ -40,9 +40,8 @@ async function sendMsg() {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true' // INI SANGAT PENTING
       },
-      // KUNCI KETEGASAN: Temperature diturunkan jadi 0.2
       body: JSON.stringify({ messages: chatHistory, temperature: 0.2, stream: false })
     });
     
